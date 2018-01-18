@@ -1,23 +1,41 @@
 var glob = require("glob");
 var path = require("path");
+var asyncReplace = require("async-replace");
 
-module.exports = function(source) {
-  this.cacheable();
-  var regex = /.?import + ?((\w+) +from )?([\'\"])(.*?)\3/gm;
+module.exports = function(source)
+{
+  var returnResult = this.async();
+
+
+  var regex = /.?import + ?((\w+) from )?([\'\"])(.*?)\3/gm;
   var importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
   var importFiles = /import +([\'\"])(.*?)\1/gm;
   var importSass = /@import +([\'\"])(.*?)\1/gm;
+
   var resourceDir = path.dirname(this.resourcePath);
-  function replacer(match, fromStatement, obj, quote, filename) {
+
+  function resolver(match, fromStatement, obj, quote, filename, offset, source, done)
+  {
+    if (!glob.hasMagic(filename)) return done(null, match);
+    var [,prefix, pattern] = /^([^*\[?]*)(.*)$/.exec(filename)
+
+    const promise =
+    this.resolve(resourceDir, prefix, (err, basedir) => {
+      done(null, replacer(prefix, path.dirname(basedir), match, fromStatement, obj, quote, pattern))
+    });
+  }
+
+  function replacer(prefix, basedir, match, fromStatement, obj, quote, filename)
+  {
     var modules = [];
     var withModules = false;
-    if (!glob.hasMagic(filename)) return match;
+
     var result = glob
       .sync(filename, {
-        cwd: resourceDir
-      })
+        cwd: basedir
+      }))
       .map(function(file, index) {
-        var fileName = quote + file + quote;
+        var fileName = quote + prefix + file + quote;
         if (match.match(importSass)) {
           return '@import ' + fileName;
         } else if (match.match(importModules)) {
@@ -35,6 +53,7 @@ module.exports = function(source) {
     }
     return result;
   }
-  var res = source.replace(regex, replacer);
-  return res;
+
+  asyncReplace(source, regex, resolver.bind(this), returnResult);
+
 };

@@ -15,6 +15,7 @@
     "es6"
   ],
   "dependencies": {
+    "async-replace": "^1.0.1",
     "glob": "^5.0.13"
   },
   "devDependencies": {
