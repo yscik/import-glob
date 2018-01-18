@@ -16,7 +16,8 @@
   ],
   "dependencies": {
     "async-replace": "^1.0.1",
-    "glob": "^5.0.13"
+    "glob": "^5.0.13",
+    "loader-utils": "^1.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

@@ -1,12 +1,14 @@
 var glob = require("glob");
 var path = require("path");
 var asyncReplace = require("async-replace");
+var loaderUtils = require("loader-utils");
 
 module.exports = function(source)
 {
   this.cacheable(false);
   var returnResult = this.async();
 
+  var options = loaderUtils.getOptions(this);
 
   var regex = /.?import + ?((\w+) from )?([\'\"])(.*?)\3/gm;
   var importModules = /import +(\w+) +from +([\'\"])(.*?)\2/gm;
@@ -32,7 +34,7 @@ module.exports = function(source)
     var withModules = false;
 
     var result = glob
-      .sync(filename, {
+      .sync(filename, Object.assign({}, options||{}, {
         cwd: basedir
       }))
       .map(function(file, index) {
