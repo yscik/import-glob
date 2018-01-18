@@ -4,6 +4,7 @@ var asyncReplace = require("async-replace");
 
 module.exports = function(source)
 {
+  this.cacheable(false);
   var returnResult = this.async();
 
 
